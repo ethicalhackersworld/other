@@ -1,0 +1,1 @@
+ln -s /opt/Sublist3r/sublist3r.py /usr/local/bin/sublist3r
