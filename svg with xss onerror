@@ -6,3 +6,5 @@
 <script>
   document.getElementById('profile-picture').src = 'data:image/svg+xml;base64,[Your Base64 String Here]';
 </script>
+
+<img id="profile-picture" src="#" onerror="this.src='data:image/svg+xml;base64,[Your Base64 String Here]';">
