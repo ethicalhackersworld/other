@@ -14,3 +14,8 @@ background-image: url("javascript:alert('XSS')");
 +ADw-SCRIPT+AD4- 
   document.getElementById('profile-picture').src +AD0- 'data+ADs-image+AC8-svg+ADs+xml+ADs-base64,+AFs-Your Base64 String Here+AF0-';
 +ADwAIg-SCRIPT+AD4-
+
+
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+  <image href="your-image-url-here" x="0" y="0" height="500px" width="500px"/>
+</svg>
