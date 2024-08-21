@@ -10,3 +10,7 @@
 <img id="profile-picture" src="#" onerror="this.src='data:image/svg+xml;base64,[Your Base64 String Here]';">
 
 background-image: url("javascript:alert('XSS')");
+
++ADw-SCRIPT+AD4- 
+  document.getElementById('profile-picture').src +AD0- 'data+ADs-image+AC8-svg+ADs+xml+ADs-base64,+AFs-Your Base64 String Here+AF0-';
++ADwAIg-SCRIPT+AD4-
