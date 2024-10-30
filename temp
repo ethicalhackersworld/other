@@ -1,40 +1,31 @@
-using System;
-using System.IO;
-using System.Text;
+Middleware for Global Referrer Validation
 
-public class FileScanner
+
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
+
+public class RefererValidationMiddleware
 {
-    // The known EICAR test signature string.
-    private const string EicarSignature = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
+    private readonly RequestDelegate _next;
+    private readonly string _allowedReferer;
 
-    // Method to check if the file contains the EICAR signature
-    public bool IsEicarFile(Stream fileStream)
+    public RefererValidationMiddleware(RequestDelegate next, string allowedReferer)
     {
-        using (var reader = new StreamReader(fileStream, Encoding.ASCII, true, 1024, true))
-        {
-            string fileContent = reader.ReadToEnd();
-            return fileContent.Contains(EicarSignature);
-        }
+        _next = next;
+        _allowedReferer = allowedReferer;
     }
-    
-    // Method to be called when uploading the file
-    public string UploadFile(Stream fileStream)
+
+    public async Task InvokeAsync(HttpContext context)
     {
-        if (IsEicarFile(fileStream))
+        var referer = context.Request.Headers["Referer"].ToString();
+
+        if (string.IsNullOrEmpty(referer) || !referer.StartsWith(_allowedReferer))
         {
-            return "File rejected: EICAR test file detected.";
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsync("Forbidden: Invalid referer");
+            return;
         }
 
-        // Proceed with saving or processing the file.
-        return "File uploaded successfully.";
+        await _next(context); // Proceed to the next middleware if referer is valid
     }
-}
-
-
-// Assuming the file upload mechanism provides a file stream.
-using (var fileStream = new FileStream("path/to/uploaded/file.txt", FileMode.Open))
-{
-    var scanner = new FileScanner();
-    string result = scanner.UploadFile(fileStream);
-    Console.WriteLine(result);
 }
