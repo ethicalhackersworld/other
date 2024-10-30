@@ -1,4 +1,4 @@
-Middleware for Global Referrer Validation
+IMiddleware for Global Referrer Validation
 
 
 using Microsoft.AspNetCore.Http;
@@ -30,8 +30,15 @@ public class RefererValidationMiddleware
     }
 }
 
-To add middleware with asp.net core pipeline
+To add middleware with asp.net core pipeline register in startup.cs
 
 
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app.UseMiddleware<RefererValidationMiddleware>("https://your-allowed-domain.com");
 
-https://your-allowed-domain.com
+        // other middleware registrations
+    }
+}
