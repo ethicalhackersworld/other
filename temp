@@ -29,3 +29,9 @@ public class RefererValidationMiddleware
         await _next(context); // Proceed to the next middleware if referer is valid
     }
 }
+
+To add middleware with asp.net core pipeline
+
+
+
+https://your-allowed-domain.com
