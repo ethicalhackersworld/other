@@ -1,6 +1,1 @@
-Vulnerability Summary: An encrypted CAPTCHA value is exposed in the response when invalid credentials are entered during login or password recovery, potentially allowing attackers to bypass CAPTCHA validation.
-
-Impact: Attackers may reverse-engineer or tamper with the exposed CAPTCHA value, leading to automated brute-force attacks and compromising application security.
-
-Remediation: Avoid exposing CAPTCHA values in error responses. Validate CAPTCHA server-side and use secure mechanisms to ensure the integrity of CAPTCHA tokens.
-
+1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.0.100", $_)) "TCP port $_ is open"} 2>$null
