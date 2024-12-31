@@ -1,1 +1,13 @@
-1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.0.100", $_)) "TCP port $_ is open"} 2>$null
+Subject: Clarification on Cryptography Finding
+
+Dear [Recipient],
+
+During our recent security assessment, we identified weak cryptography in the application. We understand that this issue was reported earlier, and a fix was implemented but not deployed to production.
+
+As per our process, until the fix is deployed to production, we consider the vulnerability as active in production. For this specific finding, we will not create a remediation plan (RP) post-deployment. Instead, we will verify the fix directly in production once it is deployed.
+
+Please let us know if you have any questions or need further clarification.
+
+Best regards,
+[Your Name]
+
