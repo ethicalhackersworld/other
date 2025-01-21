@@ -1,9 +1,1 @@
-Subject: Follow-Up on Weak Cryptography Issue
-
-Dear [Recipient's Name],
-
-During our analysis, we observed that while the previously reported issue with RSA-based password encryption has been remediated, the rest of the application still relies on weak AES cryptography. This allows us to generate keys and decrypt sensitive data, such as CAPTCHA values. The broader cryptographic weakness remains unaddressed and requires further action.
-
-Best regards,
-[Your Name]
-
+=TRIM(LEFT('Working CRQ''s'!S2, MIN(IFERROR(FIND(" enhancement", 'Working CRQ''s'!S2), LEN('Working CRQ''s'!S2)), IFERROR(FIND(" sast", 'Working CRQ''s'!S2), LEN('Working CRQ''s'!S2)), IFERROR(FIND(" fix", 'Working CRQ''s'!S2), LEN('Working CRQ''s'!S2)), IFERROR(FIND(" opera", 'Working CRQ''s'!S2), LEN('Working CRQ''s'!S2)))-1))
