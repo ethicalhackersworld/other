@@ -1,96 +1,231 @@
-1.Vulnerability Name: Time-based Brute Force Attack (Lack of Rate Limiting)
-
-Vulnerability Summary:
-The login page of the application is susceptible to brute-force attacks due to the absence of effective rate-limiting mechanisms. This allows an attacker to submit hundreds or thousands of login attempts with minimal delay. Although there is a 4-second delay between each request, this is insufficient to prevent attackers from automating the process of guessing usernames and passwords, especially if they are able to automate the login attempts at scale.
-
-Impact (One Line):
-Attackers can exploit the delay between requests to launch time-based brute-force attacks and guess valid credentials, potentially compromising user accounts.
-
-Remediation:
-
-Rate Limiting: Implement rate-limiting mechanisms that restrict the number of login attempts within a set period, such as 5 attempts per minute. This can effectively prevent automated login attempts after a certain threshold.
-Account Lockout: After a predefined number of failed login attempts (e.g., 5 attempts), temporarily lock the account for a short period (e.g., 30 minutes) or require CAPTCHA verification to confirm that the login attempt is legitimate.
-CAPTCHA: Introduce CAPTCHA or similar challenges (e.g., reCAPTCHA) on the login page after a few failed attempts to prevent automated scripts from proceeding further.
-Progressive Delays: Consider implementing progressive delays for each failed login attempt, making it increasingly difficult for attackers to continue attempting different combinations quickly.
-Multi-factor Authentication (MFA): Enforce the use of multi-factor authentication (MFA) for sensitive or high-risk accounts, making it harder for attackers to successfully compromise accounts even if they guess passwords correctly.
+To apply these restrictions at the domain level, follow these steps using Group Policy Management (GPMC) on a Windows Server Active Directory (AD) environment.
 
 
-6.Vulnerability Name: Cleartext Password Transmission (Insecure Transmission of Passwords)
+---
 
-Vulnerability Summary:
-Passwords are being transmitted in clear text (unencrypted) during the login, registration, and "forgot password" processes. This vulnerability occurs when passwords are sent over HTTP or other unencrypted communication channels, allowing attackers to easily intercept sensitive data using tools like packet sniffers, especially when users are on unsecured networks (e.g., public Wi-Fi).
+Step 1: Block .library-ms Execution via AppLocker (Domain-wide)
 
-Impact (One Line):
-Sensitive user credentials can be intercepted by attackers, leading to unauthorized access, identity theft, and potential system compromise.
+This ensures users cannot execute .library-ms files anywhere in the domain.
 
-Remediation:
-
-Use HTTPS (TLS/SSL): Ensure that all pages handling passwords (login, registration, and password recovery) are served over HTTPS (HyperText Transfer Protocol Secure) to encrypt the data in transit, preventing it from being intercepted.
-Implement Strong TLS Configurations: Enforce strong, up-to-date TLS protocols (e.g., TLS 1.2 or 1.3) and disable weak ciphers to ensure secure communication.
-Educate Users: Encourage users to verify the presence of HTTPS in the URL and use secure networks, although the system should always ensure the data is encrypted during transmission, regardless of the user’s network security.
-Additional Best Practices:
-
-Password Hashing: Ensure passwords are never stored or transmitted in plain text, even when encrypted. Use modern password hashing algorithms (e.g., bcrypt, Argon2) to securely store passwords in the database.
-Secure Authentication Tokens: For password recovery processes, send password reset links with unique, time-limited tokens, rather than transmitting new passwords directly over email.
+1. Open Group Policy Management Console (GPMC) (gpmc.msc).
 
 
-7.
-Vulnerability Name: Cleartext Password Transmission (Insecure Transmission of Passwords)
-Vulnerability Summary:
-Passwords are being transmitted in clear text (unencrypted) during the account creation, login, and "forgot password" processes. This occurs when passwords or sensitive credentials are sent over HTTP or other insecure communication channels, leaving them vulnerable to interception by attackers using tools like packet sniffers, especially on unsecured networks (e.g., public Wi-Fi).
+2. Create/Edit a GPO:
 
-Impact (One Line):
-Sensitive credentials can be intercepted, enabling unauthorized access, identity theft, and system compromise.
+Right-click your domain or OU (Organizational Unit) containing users.
 
-Remediation Steps
-Enforce HTTPS (TLS/SSL):
+Select "Create a GPO in this domain, and Link it here..."
 
-Ensure all web pages and endpoints handling sensitive data (e.g., login, registration, password recovery) are served exclusively over HTTPS to encrypt transmitted information.
-Redirect HTTP traffic to HTTPS and use HSTS (HTTP Strict Transport Security) to enforce secure connections.
-Use Strong TLS Configurations:
-
-Enable TLS 1.2 or TLS 1.3 and disable older, insecure versions (e.g., SSL 3.0, TLS 1.0/1.1).
-Disable weak cipher suites and prioritize secure ones like AES-GCM.
-Secure Password Storage and Handling:
-
-Never store or transmit passwords in plain text, even over encrypted channels.
-Use modern password hashing algorithms like bcrypt, Argon2, or PBKDF2 for secure password storage.
-Secure Password Recovery:
-
-Avoid transmitting new or existing passwords over email.
-Instead, use time-limited, unique reset tokens in password reset links, and send them securely to the user’s registered email.
-Integrate CAPTCHAs:
-
-Implement CAPTCHA mechanisms on account creation, login, and "forgot password" workflows to prevent automated attacks such as credential stuffing or brute force attempts.
-Regular Security Audits:
-
-Continuously monitor and test your application's security posture, including TLS configurations and password handling mechanisms.
+Name it "Restrict Library Files".
 
 
-8.
-Vulnerability Name: Missing Content Security Policy (CSP) Header
-Vulnerability Summary:
-The application does not implement a Content Security Policy (CSP) header, which allows browsers to detect and mitigate common attacks such as Cross-Site Scripting (XSS), Clickjacking, and other code injection attacks. Without a CSP header, the application is more vulnerable to the execution of malicious scripts that can steal user data, hijack sessions, or perform other malicious actions.
 
-Impact (One Line):
-Lack of a CSP header increases exposure to XSS and data injection attacks, leading to data theft, compromised user sessions, or unauthorized access.
+3. Navigate to AppLocker Policies:
 
-Remediation Steps
-Define and Implement a Content Security Policy (CSP):
+Computer Configuration → Windows Settings → Security Settings → Application Control Policies → AppLocker → Script Rules
 
-Add a CSP header in your application's HTTP responses to restrict which resources (e.g., scripts, styles, images) are allowed to load. 
 
-9.
-Vulnerability Name: Use of Outdated Bootstrap Version (Bootstrap 3.4.1 with Known Vulnerabilities)
-Vulnerability Summary:
-The application is using Bootstrap version 3.4.1, which contains known vulnerabilities, including potential Cross-Site Scripting (XSS) issues and other security weaknesses. These vulnerabilities could allow attackers to inject malicious scripts, compromise user data, or disrupt the application’s functionality.
+4. Right-click Script Rules → Create New Rule.
 
-Impact (One Line):
-Using an outdated version of Bootstrap exposes the application to known vulnerabilities, increasing the risk of XSS attacks, data breaches, and compromised security.
 
-Remediation Steps
-Upgrade to the Latest Version of Bootstrap:
+5. Select "Deny" → Apply to "Everyone".
 
-Update to the latest stable version of Bootstrap (preferably Bootstrap 5 or newer), as it contains fixes for known vulnerabilities and improved security features. Check the official Bootstrap repository for updates.
 
+6. Select Path Condition → Enter:
+
+*\*.library-ms
+
+
+7. Finish & Apply the policy.
+
+
+
+✅ Effect: .library-ms files cannot execute on any domain-joined machines.
+
+
+---
+
+Step 2: Prevent .library-ms File Creation via NTFS ACL (Domain-wide)
+
+Modify Folder Redirection Policies or use Group Policy Preferences to set NTFS permissions.
+
+1. Open GPMC and Edit the same GPO.
+
+
+2. Navigate to:
+
+Computer Configuration → Preferences → Windows Settings → Files
+
+
+3. Right-click Files → New → File
+
+Action: Delete
+
+Path: C:\Users\%USERNAME%\AppData\Roaming\Microsoft\Windows\Libraries\*.library-ms
+
+
+
+4. Navigate to Folder Permissions:
+
+Computer Configuration → Policies → Windows Settings → Security Settings → File System
+
+
+5. Right-click File System → Add File:
+
+Select C:\Users\%USERNAME%\AppData\Roaming\Microsoft\Windows\Libraries
+
+Click Edit → Disable Inheritance.
+
+Remove Write and Modify permissions for Domain Users.
+
+
+
+
+✅ Effect: Users cannot create or modify .library-ms files.
+
+
+---
+
+Step 3: Restrict External Network Access via Windows Firewall (Domain-wide)
+
+To prevent .library-ms from accessing external servers, enforce firewall rules.
+
+1. Open GPMC and edit the GPO.
+
+
+2. Navigate to:
+
+Computer Configuration → Windows Settings → Security Settings → Windows Defender Firewall with Advanced Security → Outbound Rules
+
+
+3. Right-click Outbound Rules → New Rule.
+
+
+4. Choose "Program" → Enter:
+
+C:\Windows\explorer.exe
+
+
+
+
+
+
+
+
+To restrict user-created .library-ms files from accessing external server files at the domain level using Group Policy, you can implement the following strategies:
+
+1. Disable Windows Libraries Features That Rely on Indexed File Data
+
+By enabling the Group Policy setting "Turn off Windows Libraries features that rely on indexed file data," you can prevent libraries from displaying content that depends on indexing, which can include files from external servers.
+
+Steps:
+
+1. Open the Group Policy Management Console (GPMC).
+
+
+2. Navigate to:
+
+User Configuration → Administrative Templates → Windows Components → Windows Explorer
+
+
+3. Locate and enable the policy:
+
+Turn off Windows Libraries features that rely on indexed file data
+
+
+
+Reference:
+
+Windows Libraries | Microsoft Learn
+
+
+2. Configure AppLocker to Block .library-ms Files
+
+AppLocker can be used to prevent the execution of specific file types, including .library-ms files.
+
+Steps:
+
+1. In the GPMC, create or edit a Group Policy Object (GPO) linked to the desired Organizational Unit (OU).
+
+
+2. Navigate to:
+
+Computer Configuration → Windows Settings → Security Settings → Application Control Policies → AppLocker → Script Rules
+
+
+3. Right-click Script Rules and select Create New Rule.
+
+
+4. In the wizard, choose Deny and specify the user or group (e.g., Everyone).
+
+
+5. Set the condition to Path and specify:
+
+*\*.library-ms
+
+
+6. Complete the wizard to create the rule.
+
+
+
+Reference:
+
+Create Your AppLocker Policies | Microsoft Learn
+
+
+3. Restrict Creation of .library-ms Files Using File System Permissions
+
+Adjusting NTFS permissions can prevent users from creating or modifying .library-ms files.
+
+Steps:
+
+1. In the GPMC, edit the relevant GPO.
+
+
+2. Navigate to:
+
+Computer Configuration → Policies → Windows Settings → Security Settings → File System
+
+
+3. Right-click File System and select Add File.
+
+
+4. Browse to:
+
+%USERPROFILE%\AppData\Roaming\Microsoft\Windows\Libraries
+
+
+5. Configure permissions to Deny Write and Modify access for standard users.
+
+
+
+Reference:
+
+Assign Permissions to Files & Folders using Group Policy
+
+
+4. Restrict Network Access to External Servers
+
+Implement firewall rules to prevent access to external servers.
+
+Steps:
+
+1. In the GPMC, edit the appropriate GPO.
+
+
+2. Navigate to:
+
+Computer Configuration → Windows Settings → Security Settings → Windows Defender Firewall with Advanced Security → Outbound Rules
+
+
+3. Create a new rule to block outbound connections to specific IP addresses or ranges associated with external servers.
+
+
+
+Reference:
+
+Create an Outbound Program or Service Rule | Microsoft Learn
+
+
+By implementing these Group Policy configurations at the domain level, you can effectively restrict the creation and use of .library-ms files that access external server files.
 
