@@ -1,0 +1,71 @@
+This behavior is due to the Citrix NetScaler (now Citrix ADC) Gateway sending a new OTP request on each valid login submission. If a user replays the request (e.g., via a tool like Burp Suite), they can receive multiple OTPs—this is a common issue if rate-limiting or OTP generation control is not enforced properly.
+
+To limit OTPs and prevent abuse, here are recommendations and Citrix NetScaler configuration approaches:
+
+
+---
+
+1. Implement Rate Limiting / DoS Protection
+
+Use Responder Policies and Rate-Based Policies to limit how frequently OTPs can be generated:
+
+a. Create a Rate Limiting Policy
+
+You can define a policy that limits OTP requests per IP or user:
+
+add responder policy OTP_RateLimit "CLIENT.IP.SRC.IN_SUBNET(0.0.0.0/0) && SYS.COUNTER(\"otp_attempts\") > 5" reset
+
+Or use:
+
+add dos policy OTPFloodProtection -qDepth 5 -action DROP -trackBy SRCIP
+bind dos policy OTPFloodProtection <vpn vserver>
+
+b. Track by Username or IP
+
+Use trackBy to control whether it's rate-limited per IP or per user. For OTP, tracking per user might be better to prevent lockout of multiple users behind the same NAT IP.
+
+
+---
+
+2. Cache OTP Requests Temporarily
+
+You can use a rewrite or responder policy to detect duplicate OTP requests within a short time (e.g., 60 seconds) and drop or silently ignore them.
+
+
+---
+
+3. Enforce Single OTP per Session
+
+Use nFactor authentication to generate an OTP only once per session:
+
+Configure nFactor Authentication Flow to check whether an OTP was already issued.
+
+You can write logic using Advanced Authentication Policies to avoid re-triggering OTP.
+
+
+Example logic:
+
+First factor: Username + Password
+
+Second factor: OTP only if not already issued (use custom expressions or session variable check)
+
+
+
+---
+
+4. Log and Alert
+
+Track OTP abuses via syslog or SNMP by logging OTP generation activity using AuditMessage or /var/log/ns.log.
+
+
+---
+
+5. Integrate with External OTP Providers
+
+If you use third-party MFA/OTP systems (e.g., Duo, RSA), configure those to reject or ignore excessive OTP requests.
+
+
+---
+
+Would you like an example nFactor flow configuration to prevent multiple OTPs per user/session?
+
