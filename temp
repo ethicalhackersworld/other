@@ -1,16 +1,21 @@
+// ===============================
+// Bumda: IDOR Keyword Highlighter with Referer Exemption and Full Keyword Notes
+// Highlights requests containing IDOR keywords except when only found in Referer header
+// ===============================
+
 // List of IDOR keywords (lowercase)
 String[] idorKeywords = new String[] {
     "user_id", "userid", "account_id", "accountid", "profile_id", "profileid",
     "customer_id", "custid", "uid", "id=", "user=", "account=", "member_id"
 };
 
-// Get the raw request as lowercase string
+// Convert raw request to lowercase string
 String requestStr = requestResponse.request().toString().toLowerCase();
 
-// Split into lines for header parsing
+// Split request into lines for header parsing
 String[] lines = requestStr.split("\r\n");
 
-// Extract Referer header if present
+// Extract Referer header value (if any)
 String referer = null;
 for (String line : lines) {
     if (line.startsWith("referer:")) {
@@ -19,7 +24,7 @@ for (String line : lines) {
     }
 }
 
-// Find keywords in the Referer header (if any)
+// Collect keywords found in Referer
 List<String> refererKeywords = new ArrayList<>();
 if (referer != null) {
     for (String kw : idorKeywords) {
@@ -29,7 +34,7 @@ if (referer != null) {
     }
 }
 
-// Find keywords in the whole request
+// Collect keywords found in entire request
 List<String> requestKeywords = new ArrayList<>();
 for (String kw : idorKeywords) {
     if (requestStr.contains(kw.toLowerCase())) {
@@ -37,19 +42,25 @@ for (String kw : idorKeywords) {
     }
 }
 
-// Now check:
-// Highlight only if requestKeywords contains keywords
-// AND there is at least one keyword outside Referer (i.e., requestKeywords - refererKeywords not empty)
-
 boolean hasKeywordsInRequest = !requestKeywords.isEmpty();
+// Check if all keywords found are only in Referer
 boolean keywordsOnlyInReferer = hasKeywordsInRequest && requestKeywords.size() == refererKeywords.size();
 
 if (hasKeywordsInRequest && !keywordsOnlyInReferer) {
     requestResponse.annotations().setHighlightColor(HighlightColor.ORANGE);
-    String notes = "Possible IDOR parameters: " + String.join(", ", requestKeywords);
+
+    // Manually join all matched keywords with commas
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < requestKeywords.size(); i++) {
+        sb.append(requestKeywords.get(i));
+        if (i < requestKeywords.size() - 1) {
+            sb.append(", ");
+        }
+    }
+    String notes = "Possible IDOR parameters: " + sb.toString();
     requestResponse.annotations().setNotes(notes);
 } else {
-    // No highlight if keywords only in Referer or no keywords found
+    // No highlight if no keywords or keywords only in Referer
     requestResponse.annotations().setHighlightColor(HighlightColor.NONE);
     requestResponse.annotations().setNotes("");
 }
