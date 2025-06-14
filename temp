@@ -1,68 +1,95 @@
-// ===============================
-// Bumda: IDOR Keyword Highlighter with Referer Exemption and Full Keyword Notes
-// Highlights requests containing IDOR keywords except when only found in Referer header
-// ===============================
+This is a critical authentication & authorization flaw. You successfully bypassed an account deactivation control enforced by backend policy by abusing the account lockout and self-service unlock mechanism in the frontend app, resulting in unauthorized reactivation of deactivated users.
 
-// List of IDOR keywords (lowercase)
-String[] idorKeywords = new String[] {
-    "user_id", "userid", "account_id", "accountid", "profile_id", "profileid",
-    "customer_id", "custid", "uid", "id=", "user=", "account=", "member_id"
-};
+Below is a complete reporting structure for this security finding:
 
-// Convert raw request to lowercase string
-String requestStr = requestResponse.request().toString().toLowerCase();
 
-// Split request into lines for header parsing
-String[] lines = requestStr.split("\r\n");
+---
 
-// Extract Referer header value (if any)
-String referer = null;
-for (String line : lines) {
-    if (line.startsWith("referer:")) {
-        referer = line.substring("referer:".length()).trim();
-        break;
-    }
-}
+🔍 Finding Name:
 
-// Collect keywords found in Referer
-List<String> refererKeywords = new ArrayList<>();
-if (referer != null) {
-    for (String kw : idorKeywords) {
-        if (referer.contains(kw.toLowerCase())) {
-            refererKeywords.add(kw);
-        }
-    }
-}
+Improper Account State Enforcement Leading to Unauthorized Reactivation of Deactivated Accounts
 
-// Collect keywords found in entire request
-List<String> requestKeywords = new ArrayList<>();
-for (String kw : idorKeywords) {
-    if (requestStr.contains(kw.toLowerCase())) {
-        requestKeywords.add(kw);
-    }
-}
 
-boolean hasKeywordsInRequest = !requestKeywords.isEmpty();
-// Check if all keywords found are only in Referer
-boolean keywordsOnlyInReferer = hasKeywordsInRequest && requestKeywords.size() == refererKeywords.size();
+---
 
-if (hasKeywordsInRequest && !keywordsOnlyInReferer) {
-    requestResponse.annotations().setHighlightColor(HighlightColor.ORANGE);
+📄 Summary:
 
-    // Manually join all matched keywords with commas
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < requestKeywords.size(); i++) {
-        sb.append(requestKeywords.get(i));
-        if (i < requestKeywords.size() - 1) {
-            sb.append(", ");
-        }
-    }
-    String notes = "Possible IDOR parameters: " + sb.toString();
-    requestResponse.annotations().setNotes(notes);
-} else {
-    // No highlight if no keywords or keywords only in Referer
-    requestResponse.annotations().setHighlightColor(HighlightColor.NONE);
-    requestResponse.annotations().setNotes("");
-}
+The application fails to enforce backend user deactivation policies consistently across both internal (admin) and external (frontend) components. By intentionally triggering account lockout on a deactivated user and later leveraging the self-service account unlock flow, an attacker can reactivate a deactivated account without backend/admin intervention, violating company policy and compromising user management integrity.
 
-return true;
+
+---
+
+🧾 Description:
+
+During testing, it was observed that accounts deactivated via the internal backend application (per company policy) could be reactivated through a misconfigured self-service unlock flow available on the frontend application.
+
+Steps to reproduce:
+
+1. A user account was deactivated in the backend system by internal administrators (e.g., due to inactivity, termination, or other policy reasons).
+
+
+2. Attempting to log in with correct or incorrect credentials resulted in the message: "Account is deactivated. Please contact administrator." — confirming the deactivation.
+
+
+3. By deliberately entering invalid credentials multiple times (typically 3), the application displayed a lockout message instead: "Your account is locked."
+
+
+4. The frontend unlock mechanism then allowed initiating an unlock flow (e.g., via email or OTP).
+
+
+5. After waiting the required lockout duration (e.g., 24 hours), a user was able to complete the unlock process, reset their password, and regain access.
+
+
+6. Upon reviewing the backend user management system, the account status was found to have changed from inactive to active, effectively bypassing administrative control.
+
+
+
+This indicates a lack of state validation during the unlock process and inconsistent enforcement of deactivation rules across application components.
+
+
+---
+
+⚠️ Impact:
+
+Security Policy Bypass: Deactivated accounts, possibly disabled for security or compliance reasons, can be reactivated without authorization.
+
+Unauthorized Access: Previously disabled users (e.g., ex-employees) could potentially regain access.
+
+Privilege Escalation Risk: If deactivated users held elevated privileges, they might regain sensitive access.
+
+Data Integrity Risk: Unauthorized users might tamper with or access confidential information.
+
+Compliance Violation: Violates policies requiring administrative control over account lifecycle management.
+
+
+
+---
+
+🛠️ Remediation:
+
+Strictly enforce account state checks during all authentication and unlock/reset flows.
+
+The unlock mechanism must verify the account is in an active state before allowing password resets or unlocking.
+
+Implement a centralized user status validation layer shared by both backend and frontend components.
+
+Introduce audit logging for all unlock/reset actions, including account state before and after the action.
+
+Consider disabling self-service unlock/reset flows for deactivated users altogether — redirect them to contact support/admin instead.
+
+
+
+---
+
+📚 References:
+
+OWASP Broken Access Control
+
+OWASP Authentication Cheat Sheet
+
+
+
+---
+
+Let me know if you want to add POC screenshots or HTTP request samples to support this finding for a formal report.
+
