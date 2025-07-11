@@ -8,7 +8,7 @@ services:
       - "8080:8080"
     environment:
       - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=(apikey)
     volumes:
       - open-webui:/app/backend/data
 
