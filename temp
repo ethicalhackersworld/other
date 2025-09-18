@@ -1,18 +1,1 @@
-We’ve reviewed the vulnerability recently reported via the bug bounty program and wanted to provide context regarding why it was not identified during the original penetration test.
-
-The main application under scope was /cxp (login and post-login functionality). The registration link within this application redirects users to /registration/controller, which is technically a separate application within the same domain.
-
-The vulnerable endpoint was identified through a crawled URL:
-unified registration?action=selectuser&successpage=/cxp/jsp/admin
-This URL does not exist in the primary application we tested and was not part of our dynamic analysis scope at the time. Our assessment focused on live interactions and dynamic testing of the main application, whereas the vulnerability was discovered via crawling (information gathering), which we had not planned to cover in this engagement. As such, this path was not exercised in our logs or test cases.
-
-Next Steps / Improvements:
-
-Updating our methodology to include linked/cross-application endpoints within the same domain, even if initially considered separate.
-
-Expanding crawling and information-gathering checks to identify endpoints that could expose sensitive parameters.
-
-Retesting the affected endpoint and adjacent components to ensure comprehensive coverage.
-
-
-These measures will help prevent similar gaps in future assessments and strengthen our testing process.
+Ha
