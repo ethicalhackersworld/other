@@ -1,41 +1,18 @@
-Here’s a professional draft email you can send to your ServiceNow / IT Admin / Integration team.
-I’ve made it clear, actionable, and neutral — you can tweak names or references:
+We’ve reviewed the vulnerability recently reported via the bug bounty program and wanted to provide context regarding why it was not identified during the original penetration test.
+
+The main application under scope was /cxp (login and post-login functionality). The registration link within this application redirects users to /registration/controller, which is technically a separate application within the same domain.
+
+The vulnerable endpoint was identified through a crawled URL:
+unified registration?action=selectuser&successpage=/cxp/jsp/admin
+This URL does not exist in the primary application we tested and was not part of our dynamic analysis scope at the time. Our assessment focused on live interactions and dynamic testing of the main application, whereas the vulnerability was discovered via crawling (information gathering), which we had not planned to cover in this engagement. As such, this path was not exercised in our logs or test cases.
+
+Next Steps / Improvements:
+
+Updating our methodology to include linked/cross-application endpoints within the same domain, even if initially considered separate.
+
+Expanding crawling and information-gathering checks to identify endpoints that could expose sensitive parameters.
+
+Retesting the affected endpoint and adjacent components to ensure comprehensive coverage.
 
 
----
-
-Subject: Action Required – Update Integration to Use Dedicated Service Account in ServiceNow
-
-Body:
-
-Hello [Team/Name],
-
-During our recent review of user account management in ServiceNow, we identified that integrations fetching or creating user accounts are currently running under a normal user account instead of the designated service account.
-
-Using a normal user account for automated processes poses security and audit concerns, and may also lead to unintended user creation or modification.
-
-Action Required:
-
-Verify all integrations, imports, and scheduled jobs fetching/creating user records in ServiceNow.
-
-Update credentials and “Run As” configurations to use the approved service account instead of any normal user account.
-
-Restrict elevated roles (e.g., user_admin, security_admin) to the service account only.
-
-Confirm access controls on sys_user and related tables are correctly enforced.
-
-
-Goal:
-Ensure all automated processes use the dedicated service account to maintain compliance, traceability, and least-privilege access.
-
-Please let us know once this change is completed or if additional details are required from our side.
-
-Thank you,
-[Your Name]
-[Your Position]
-
-
----
-
-Would you like me to make it more strict/urgent (like an audit finding) or more collaborative/helpful (like a request for assistance)?
-
+These measures will help prevent similar gaps in future assessments and strengthen our testing process.
